@@ -64,16 +64,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     <div class="info-icon">🏦</div>
     <div class="info-content">
       <div class="info-label-sm">Ngân hàng</div>
-      <div class="info-value">MB NGÂN HÀNG QUÂN ĐỘI</div>
+      <div class="info-value">NGÂN HÀNG BIDV</div>
     </div>
   </div>
   <div class="info-item">
     <div class="info-icon">💳</div>
     <div class="info-content">
       <div class="info-label-sm">Số tài khoản</div>
-      <div class="info-value">0868791179</div>
+      <div class="info-value">8896677206</div>
     </div>
-    <button class="copy-btn" onclick="copyText('0868791179')">Copy</button>
+    <button class="copy-btn" onclick="copyText('8896677206')">Copy</button>
   </div>
   <div class="info-item">
     <div class="info-icon">👤</div>
@@ -128,8 +128,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   document.getElementById('txCode').innerText = txCode;
 
   // Tạo QR bằng vietqr.io (dùng cùng thông tin)
-  const BANK_ID = 'MB';
-  const ACCOUNT_NO = '0868791179';
+  const BANK_ID = 'BIDV';
+  const ACCOUNT_NO = '8896677206';
   const ACCOUNT_NAME = 'HOANG THE ANH';
   const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${txCode}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
