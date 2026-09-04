@@ -19,6 +19,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
 .qr-card img{width:200px;height:200px;border-radius:8px}
 .qr-loading{width:200px;height:200px;display:flex;align-items:center;justify-content:center;background:#f9f9f9;border-radius:8px;color:#888;font-size:13px;text-align:center;padding:16px}
 .amount-label{color:#e74c3c;font-size:22px;font-weight:800;margin-top:14px}
+.payment-status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:12px;
+  padding:8px 14px;
+  background:#fff7e6;
+  border:1px solid #f5d28a;
+  border-radius:20px;
+  color:#b77900;
+  font-size:14px;
+  font-weight:700;
+}
+
+.status-dot{
+  font-size:16px;
+  animation:pulse 1.2s infinite;
+}
+
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:.35}
+}
 .info-list{margin:0 16px 16px;display:flex;flex-direction:column;gap:10px}
 .info-item{background:#fff;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
 .info-icon{font-size:20px;width:28px;text-align:center}
@@ -57,6 +80,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   <div class="qr-loading" id="qrLoading">Đang tạo mã QR...</div>
   <img id="qrImg" style="display:none" alt="QR">
   <div class="amount-label" id="amountDisplay">0 VND</div>
+  <div class="payment-status" id="paymentStatus">
+   <span class="status-dot">●</span>
+   <span>Đang chờ thanh toán</span>
+</div>
 </div>
 
 <div class="info-list">
