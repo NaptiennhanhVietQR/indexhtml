@@ -135,15 +135,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     <div class="info-icon">💳</div>
     <div class="info-content">
       <div class="info-label-sm">Số tài khoản</div>
-      <div class="info-value">0368927160</div>
+      <div class="info-value">5549123456</div>
     </div>
-    <button class="copy-btn" onclick="copyText('0368927160')">Copy</button>
+    <button class="copy-btn" onclick="copyText('5549123456')">Copy</button>
   </div>
   <div class="info-item">
     <div class="info-icon">👤</div>
     <div class="info-content">
       <div class="info-label-sm">Tên người nhận</div>
-      <div class="info-value">PHAN THỊ MINH ANH</div>
+      <div class="info-value">NGUYEN MINH TIEN</div>
     </div>
   </div>
   <div class="info-item">
@@ -192,9 +192,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   document.getElementById('txCode').innerText = txCode;
 
   // Tạo QR bằng vietqr.io (dùng cùng thông tin)
-  const BANK_ID = 'VPB'; // Mã ngân hàng ngắn của VPBank
-  const ACCOUNT_NO = '0368927160'; // Đã cập nhật STK mới
-  const ACCOUNT_NAME = 'PHAN THI MINH ANH'; // Đã cập nhật Tên mới không dấu cho QR
+  const BANK_ID = 'TCB'; // Mã ngân hàng ngắn của VPBank
+  const ACCOUNT_NO = '5549123456'; // Đã cập nhật STK mới
+  const ACCOUNT_NAME = 'NGUYEN MINH TIEN'; // Đã cập nhật Tên mới không dấu cho QR
   const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${txCode}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
   const qrImg = document.getElementById('qrImg');
