@@ -176,39 +176,68 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
 </a>
 
 <script>
-  // Cấu hình mặc định dự phòng
   const DEFAULT_CONFIG = {
     bankId: 'TCB',
     bankName: 'Techcombank',
     accountNo: '5549123456',
     accountName: 'NGUYEN MINH TIEN',
+    txPrefix: 'chuyen khoan',
+    defaultTxCode: 'chuyen khoan MDF2AC68B',
+    autoRandomCode: true,
     cskhUrl: 'https://t.me/alexpham2482',
     logoUrl: 'https://f1686s.com/favicon.ico',
     timerMinutes: 15,
     minAmount: '10.000 VND'
   };
 
+  function random9Alphanumeric() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 9; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
   // Lấy tham số từ URL
   const params = new URLSearchParams(window.location.search);
   const amount = params.get('amount') || '0';
-  const txCode = params.get('code') || '---';
+  const urlCode = params.get('code');
   const amountNum = parseInt(amount) || 0;
   const amountVND = amountNum.toLocaleString('vi-VN') + ' VND';
 
   document.getElementById('amountDisplay').innerText = amountVND;
   document.getElementById('amountValue').innerText = amountVND;
-  document.getElementById('txCode').innerText = txCode;
 
   let timerInterval = null;
+  let generatedSessionCode = null;
 
-  // Hàm áp dụng cấu hình lên giao diện & tạo QR
+  function resolveTransactionCode(config) {
+    // 1. Nếu trên URL có ?code=... thì ưu tiên hiển thị theo URL
+    if (urlCode && urlCode.trim() !== '') {
+      return urlCode.trim();
+    }
+    // 2. Nếu bật chế độ tự động random mã 9 ký tự cho mỗi phiên
+    if (config.autoRandomCode) {
+      if (!generatedSessionCode) {
+        generatedSessionCode = random9Alphanumeric();
+      }
+      const prefix = (config.txPrefix !== undefined ? config.txPrefix : 'chuyen khoan').trim();
+      return prefix ? `${prefix} ${generatedSessionCode}` : generatedSessionCode;
+    }
+    // 3. Nếu tắt autoRandomCode thì dùng đúng mã cố định đã lưu trong Admin
+    return config.defaultTxCode || 'chuyen khoan MDF2AC68B';
+  }
+
   function applyConfig(cfg) {
     const config = { ...DEFAULT_CONFIG, ...cfg };
+    const finalTxCode = resolveTransactionCode(config);
 
     document.getElementById('bankNameDisplay').innerText = config.bankName;
     document.getElementById('accountNoDisplay').innerText = config.accountNo;
     document.getElementById('accountNameDisplay').innerText = config.accountName;
     document.getElementById('minAmountDisplay').innerText = config.minAmount;
+    document.getElementById('txCode').innerText = finalTxCode;
 
     const cskhBtn = document.getElementById('cskhBtn');
     if (config.cskhUrl) cskhBtn.href = config.cskhUrl;
@@ -219,8 +248,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
       logoImg.src = config.logoUrl;
     }
 
-    // Tạo QR VietQR
-    const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(config.bankId)}-${encodeURIComponent(config.accountNo)}-compact2.png?amount=${amountNum}&addInfo=${encodeURIComponent(txCode)}&accountName=${encodeURIComponent(config.accountName)}`;
+    // Tạo QR VietQR với nội dung chuyển khoản mới
+    const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(config.bankId)}-${encodeURIComponent(config.accountNo)}-compact2.png?amount=${amountNum}&addInfo=${encodeURIComponent(finalTxCode)}&accountName=${encodeURIComponent(config.accountName)}`;
     const qrImg = document.getElementById('qrImg');
     const qrLoading = document.getElementById('qrLoading');
 
@@ -235,15 +264,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     };
     qrImg.src = qrUrl;
 
-    // Khởi động bộ đếm thời gian
     startTimer((parseInt(config.timerMinutes) || 15) * 60);
   }
 
-  // Tải cấu hình: Ưu tiên file config.json trên server (chống cache), sau đó kết hợp localStorage
   async function loadPaymentConfig() {
     let finalConfig = { ...DEFAULT_CONFIG };
 
-    // 1. Đọc từ localStorage (nếu vừa sửa trên cùng trình duyệt)
     const localSaved = localStorage.getItem('payment_gateway_config');
     if (localSaved) {
       try {
@@ -251,24 +277,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
       } catch (e) {}
     }
 
-    // 2. Đọc từ file config.json trên server (để đồng bộ mọi thiết bị khách)
     try {
       const res = await fetch(`./config.json?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const remoteConfig = await res.json();
-        // Nếu server có dữ liệu mới, ưu tiên dữ liệu server (hoặc local nếu đang test)
         if (!localStorage.getItem('prefer_local_override')) {
           finalConfig = { ...finalConfig, ...remoteConfig };
         }
       }
-    } catch (err) {
-      // Nếu chạy file:// hoặc chưa có config.json thì dùng finalConfig hiện tại
-    }
+    } catch (err) {}
 
     applyConfig(finalConfig);
   }
 
-  // Lắng nghe thay đổi trực tiếp nếu mở tab admin và index cùng lúc
   window.addEventListener('storage', (e) => {
     if (e.key === 'payment_gateway_config' && e.newValue) {
       try {
@@ -306,7 +327,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     }, 1000);
   }
 
-  // Copy
   function copyText(t) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(t).then(showToast).catch(() => fallbackCopy(t));
