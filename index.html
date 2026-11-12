@@ -8,7 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;min-height:100vh}
 .top-bar{display:flex;align-items:center;justify-content:center;padding:14px 16px;background:#fff;border-bottom:1px solid #eee;position:relative}
-.back-btn{position:absolute;left:16px;font-size:22px;color:#333;text-decoration:none}
+.back-btn{position:absolute;left:16px;font-size:22px;color:#333;text-decoration:none;cursor:pointer}
 .logo{width:36px;height:36px;border-radius:50%;object-fit:cover}
 .notice{background:linear-gradient(90deg,#f5a623,#f7c05a);border-radius:12px;margin:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
 .notice-text{color:#fff;font-size:14px;font-weight:600;line-height:1.4;flex:1}
@@ -32,12 +32,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   font-size:14px;
   font-weight:700;
 }
-
 .status-dot{
   font-size:16px;
   animation:pulse 1.2s infinite;
 }
-
 @keyframes pulse{
   0%,100%{opacity:1}
   50%{opacity:.35}
@@ -66,35 +64,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   position:fixed;
   right:16px;
   bottom:16px;
-
   display:flex;
   align-items:center;
   justify-content:center;
   gap:6px;
-
   width:auto;
   margin:0;
   padding:10px 14px;
-
   background:#df001b;
   color:#fff;
   text-decoration:none;
   border-radius:999px;
-
   font-size:14px;
   font-weight:700;
-
   box-shadow:0 3px 10px rgba(0,0,0,.18);
   z-index:9999;
-
   transition:transform .15s, opacity .15s;
 }
-
 .contact-cskh:active{
   transform:scale(.95);
   opacity:.9;
 }
-
 .headset{
   font-size:18px;
   line-height:1;
@@ -105,7 +95,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
 
 <div class="top-bar">
   <a class="back-btn" onclick="history.back()">&#8249;</a>
-  <img class="logo" src="https://f1686s.com/favicon.ico" onerror="this.style.display='none'">
+  <img class="logo" id="logoImg" src="https://f1686s.com/favicon.ico" onerror="this.style.display='none'">
 </div>
 
 <div class="notice">
@@ -118,9 +108,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   <img id="qrImg" style="display:none" alt="QR">
   <div class="amount-label" id="amountDisplay">0 VND</div>
   <div class="payment-status" id="paymentStatus">
-   <span class="status-dot">●</span>
-   <span>Đang chờ thanh toán</span>
-</div>
+    <span class="status-dot">●</span>
+    <span>Đang chờ thanh toán</span>
+  </div>
 </div>
 
 <div class="info-list">
@@ -128,22 +118,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     <div class="info-icon">🏦</div>
     <div class="info-content">
       <div class="info-label-sm">Ngân hàng</div>
-      <div class="info-value">Techcombank</div>
+      <div class="info-value" id="bankNameDisplay">Techcombank</div>
     </div>
   </div>
   <div class="info-item">
     <div class="info-icon">💳</div>
     <div class="info-content">
       <div class="info-label-sm">Số tài khoản</div>
-      <div class="info-value">5549123456</div>
+      <div class="info-value" id="accountNoDisplay">5549123456</div>
     </div>
-    <button class="copy-btn" onclick="copyText('5549123456')">Copy</button>
+    <button class="copy-btn" onclick="copyText(document.getElementById('accountNoDisplay').innerText)">Copy</button>
   </div>
   <div class="info-item">
     <div class="info-icon">👤</div>
     <div class="info-content">
       <div class="info-label-sm">Tên người nhận</div>
-      <div class="info-value">NGUYEN MINH TIEN</div>
+      <div class="info-value" id="accountNameDisplay">NGUYEN MINH TIEN</div>
     </div>
   </div>
   <div class="info-item">
@@ -167,7 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
 <div class="note">
   <h3>Xin lưu ý :</h3>
   <p>1. Vui lòng chọn phương thức chuyển tiền nhanh 24/7</p>
-  <p>2. Vui lòng điền chính xác <strong>SỐ TIỀN</strong>, <strong>SỐ TÀI KHOẢN</strong> và <strong>NỘI DUNG CHUYỂN KHOẢN</strong> chỉ hỗ trợ các KHOẢN NẠP trên <strong>10.000 VND</strong> được yêu cầu từ hệ thống.</p>
+  <p>2. Vui lòng điền chính xác <strong>SỐ TIỀN</strong>, <strong>SỐ TÀI KHOẢN</strong> và <strong>NỘI DUNG CHUYỂN KHOẢN</strong> chỉ hỗ trợ các KHOẢN NẠP trên <strong id="minAmountDisplay">10.000 VND</strong> được yêu cầu từ hệ thống.</p>
   <p>3. Lưu lại biên lai giao dịch để đối chiếu khi cần thiết.</p>
 </div>
 
@@ -179,69 +169,167 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   </div>
 </div>
 
+<!-- Nút liên hệ CSKH -->
+<a href="https://t.me/alexpham2482" id="cskhBtn" class="contact-cskh" target="_blank">
+  <span>Hỗ Trợ CSKH</span>
+  <span class="headset">🎧</span>
+</a>
+
 <script>
+  // Cấu hình mặc định dự phòng
+  const DEFAULT_CONFIG = {
+    bankId: 'TCB',
+    bankName: 'Techcombank',
+    accountNo: '5549123456',
+    accountName: 'NGUYEN MINH TIEN',
+    cskhUrl: 'https://t.me/alexpham2482',
+    logoUrl: 'https://f1686s.com/favicon.ico',
+    timerMinutes: 15,
+    minAmount: '10.000 VND'
+  };
+
   // Lấy tham số từ URL
   const params = new URLSearchParams(window.location.search);
   const amount = params.get('amount') || '0';
   const txCode = params.get('code') || '---';
-  const amountVND = parseInt(amount).toLocaleString('vi-VN') + ' VND';
+  const amountNum = parseInt(amount) || 0;
+  const amountVND = amountNum.toLocaleString('vi-VN') + ' VND';
 
-  // Hiển thị số tiền
   document.getElementById('amountDisplay').innerText = amountVND;
   document.getElementById('amountValue').innerText = amountVND;
   document.getElementById('txCode').innerText = txCode;
 
-  // Tạo QR bằng vietqr.io (dùng cùng thông tin)
-  const BANK_ID = 'TCB'; // Mã ngân hàng ngắn của VPBank
-  const ACCOUNT_NO = '5549123456'; // Đã cập nhật STK mới
-  const ACCOUNT_NAME = 'NGUYEN MINH TIEN'; // Đã cập nhật Tên mới không dấu cho QR
-  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${txCode}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+  let timerInterval = null;
 
-  const qrImg = document.getElementById('qrImg');
-  const qrLoading = document.getElementById('qrLoading');
-  qrImg.onload = function(){ qrLoading.style.display='none'; qrImg.style.display='block'; };
-  qrImg.onerror = function(){ qrLoading.innerText='Không tải được QR. Vui lòng thử lại.'; };
-  qrImg.src = qrUrl;
+  // Hàm áp dụng cấu hình lên giao diện & tạo QR
+  function applyConfig(cfg) {
+    const config = { ...DEFAULT_CONFIG, ...cfg };
+
+    document.getElementById('bankNameDisplay').innerText = config.bankName;
+    document.getElementById('accountNoDisplay').innerText = config.accountNo;
+    document.getElementById('accountNameDisplay').innerText = config.accountName;
+    document.getElementById('minAmountDisplay').innerText = config.minAmount;
+
+    const cskhBtn = document.getElementById('cskhBtn');
+    if (config.cskhUrl) cskhBtn.href = config.cskhUrl;
+
+    const logoImg = document.getElementById('logoImg');
+    if (config.logoUrl) {
+      logoImg.style.display = 'block';
+      logoImg.src = config.logoUrl;
+    }
+
+    // Tạo QR VietQR
+    const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(config.bankId)}-${encodeURIComponent(config.accountNo)}-compact2.png?amount=${amountNum}&addInfo=${encodeURIComponent(txCode)}&accountName=${encodeURIComponent(config.accountName)}`;
+    const qrImg = document.getElementById('qrImg');
+    const qrLoading = document.getElementById('qrLoading');
+
+    qrLoading.style.display = 'flex';
+    qrImg.style.display = 'none';
+    qrImg.onload = function() {
+      qrLoading.style.display = 'none';
+      qrImg.style.display = 'block';
+    };
+    qrImg.onerror = function() {
+      qrLoading.innerText = 'Không tải được QR. Vui lòng thử lại.';
+    };
+    qrImg.src = qrUrl;
+
+    // Khởi động bộ đếm thời gian
+    startTimer((parseInt(config.timerMinutes) || 15) * 60);
+  }
+
+  // Tải cấu hình: Ưu tiên file config.json trên server (chống cache), sau đó kết hợp localStorage
+  async function loadPaymentConfig() {
+    let finalConfig = { ...DEFAULT_CONFIG };
+
+    // 1. Đọc từ localStorage (nếu vừa sửa trên cùng trình duyệt)
+    const localSaved = localStorage.getItem('payment_gateway_config');
+    if (localSaved) {
+      try {
+        finalConfig = { ...finalConfig, ...JSON.parse(localSaved) };
+      } catch (e) {}
+    }
+
+    // 2. Đọc từ file config.json trên server (để đồng bộ mọi thiết bị khách)
+    try {
+      const res = await fetch(`./config.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const remoteConfig = await res.json();
+        // Nếu server có dữ liệu mới, ưu tiên dữ liệu server (hoặc local nếu đang test)
+        if (!localStorage.getItem('prefer_local_override')) {
+          finalConfig = { ...finalConfig, ...remoteConfig };
+        }
+      }
+    } catch (err) {
+      // Nếu chạy file:// hoặc chưa có config.json thì dùng finalConfig hiện tại
+    }
+
+    applyConfig(finalConfig);
+  }
+
+  // Lắng nghe thay đổi trực tiếp nếu mở tab admin và index cùng lúc
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'payment_gateway_config' && e.newValue) {
+      try {
+        applyConfig(JSON.parse(e.newValue));
+      } catch (err) {}
+    }
+  });
+
+  function startTimer(totalSecs) {
+    if (timerInterval) clearInterval(timerInterval);
+    let secs = totalSecs;
+    const timerEl = document.getElementById('timer');
+    const qrImg = document.getElementById('qrImg');
+    timerEl.classList.remove('urgent');
+    document.getElementById('expiredOverlay').style.display = 'none';
+    qrImg.style.opacity = '1';
+
+    const renderTime = () => {
+      const m = String(Math.floor(secs / 60)).padStart(2, '0');
+      const s = String(secs % 60).padStart(2, '0');
+      timerEl.textContent = m + ':' + s;
+    };
+    renderTime();
+
+    timerInterval = setInterval(() => {
+      secs--;
+      renderTime();
+      if (secs <= 60) timerEl.classList.add('urgent');
+      if (secs <= 0) {
+        clearInterval(timerInterval);
+        timerEl.textContent = '00:00';
+        document.getElementById('expiredOverlay').style.display = 'flex';
+        qrImg.style.opacity = '0.3';
+      }
+    }, 1000);
+  }
 
   // Copy
-  function copyText(t){
-    if(navigator.clipboard){navigator.clipboard.writeText(t).then(showToast).catch(()=>fallbackCopy(t));}
-    else fallbackCopy(t);
-  }
-  function fallbackCopy(t){
-    const ta=document.createElement('textarea');
-    ta.value=t;document.body.appendChild(ta);ta.select();
-    document.execCommand('copy');document.body.removeChild(ta);showToast();
-  }
-  function showToast(){
-    const el=document.getElementById('toast');
-    el.classList.add('show');
-    setTimeout(()=>el.classList.remove('show'),2000);
-  }
-
-  // Timer 15 phút
-  let secs = 15*60;
-  const timerEl = document.getElementById('timer');
-  const iv = setInterval(()=>{
-    secs--;
-    const m=String(Math.floor(secs/60)).padStart(2,'0');
-    const s=String(secs%60).padStart(2,'0');
-    timerEl.textContent=m+':'+s;
-    if(secs<=60) timerEl.classList.add('urgent');
-    if(secs<=0){
-      clearInterval(iv);
-      timerEl.textContent='00:00';
-      document.getElementById('expiredOverlay').style.display='flex';
-      qrImg.style.opacity='0.3';
+  function copyText(t) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(t).then(showToast).catch(() => fallbackCopy(t));
+    } else {
+      fallbackCopy(t);
     }
-  },1000);
-</script>
-<div class="toast" id="toast">Đã sao chép!</div>
+  }
+  function fallbackCopy(t) {
+    const ta = document.createElement('textarea');
+    ta.value = t;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast();
+  }
+  function showToast() {
+    const el = document.getElementById('toast');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+  }
 
-<!-- Nút liên hệ CSKH -->
-<a href="https://t.me/alexpham2482" class="contact-cskh" target="_blank">
-  <span>Hỗ Trợ CSKH</span>
-  <span class="headset">🎧</span>
-</a>
+  loadPaymentConfig();
+</script>
 </body>
 </html>
