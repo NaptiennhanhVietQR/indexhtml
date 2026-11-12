@@ -82,7 +82,7 @@
     color: #374151;
     margin-bottom: 6px;
   }
-  input, select {
+  input[type="text"], input[type="number"], input[type="password"], select {
     width: 100%;
     padding: 11px 14px;
     border: 1px solid var(--border);
@@ -102,6 +102,29 @@
     color: var(--muted);
     margin-top: 4px;
   }
+  .input-with-btn {
+    display: flex;
+    gap: 8px;
+  }
+  .input-with-btn input {
+    flex: 1;
+  }
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #374151;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .checkbox-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
   .btn-group {
     display: flex;
     flex-wrap: wrap;
@@ -109,7 +132,7 @@
     margin-top: 20px;
   }
   .btn {
-    padding: 12px 18px;
+    padding: 11px 16px;
     border-radius: 10px;
     font-size: 14px;
     font-weight: 700;
@@ -121,6 +144,7 @@
     gap: 8px;
     transition: transform 0.1s, opacity 0.2s, background 0.2s;
     text-decoration: none;
+    white-space: nowrap;
   }
   .btn:active { transform: scale(0.98); }
   .btn-primary {
@@ -229,7 +253,7 @@
   <div>
     <div class="card">
       <div class="card-header">
-        <div class="card-title">⚙️ Cấu Hình Tài Khoản Nhận Tiền</div>
+        <div class="card-title">⚙️ Cấu Hình Tài Khoản & Nội Dung</div>
         <span class="badge" id="syncBadge">Đang hoạt động</span>
       </div>
 
@@ -272,7 +296,6 @@
         <div class="form-group">
           <label>Tên Ngân Hàng Hiển Thị</label>
           <input type="text" id="bankName" required placeholder="VD: Techcombank, VPBank..." oninput="updatePreview()">
-          <div class="hint">Tên hiển thị ở dòng "Ngân hàng" trên trang index.html</div>
         </div>
 
         <div class="form-group">
@@ -283,7 +306,29 @@
         <div class="form-group">
           <label>Tên Người Thụ Hưởng (Không dấu, In hoa)</label>
           <input type="text" id="accountName" required placeholder="VD: NGUYEN MINH TIEN" oninput="formatAccountName(this); updatePreview()">
-          <div class="hint">Tự động chuyển sang IN HOA không dấu để tương thích 100% với VietQR</div>
+        </div>
+
+        <!-- PHẦN CẤU HÌNH NỘI DUNG CHUYỂN KHOẢN + 9 KÝ TỰ NGẪU NHIÊN -->
+        <div class="form-group" style="background:#fffdf7; border:1px solid #f5d28a; padding:14px; border-radius:12px;">
+          <label>Cấu Hình Nội Dung Chuyển Khoản (Tiền tố + Mã 9 ký tự chữ & số)</label>
+          <div class="form-row" style="margin-bottom:10px;">
+            <div>
+              <label style="font-size:12px; color:#666;">Tiền tố cố định</label>
+              <input type="text" id="txPrefix" value="chuyen khoan" placeholder="chuyen khoan" oninput="onPrefixChange()">
+            </div>
+            <div>
+              <label style="font-size:12px; color:#666;">Nội dung đầy đủ (Có thể sửa tay hoặc Random)</label>
+              <div class="input-with-btn">
+                <input type="text" id="defaultTxCode" value="chuyen khoan MDF2AC68B" oninput="syncTestCodeFromDefault()">
+                <button type="button" class="btn btn-secondary" onclick="generateNewRandomTx()">🎲 Đổi mã</button>
+              </div>
+            </div>
+          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="autoRandomCode" checked onchange="updatePreview()">
+            <span>Tự động tạo mã 9 ký tự ngẫu nhiên mới cho mỗi khách khi vào trang index.html (nếu URL không gắn sẵn ?code=...)</span>
+          </label>
+          <div class="hint">Định dạng chuẩn: <strong>[Tiền tố] + [9 ký tự chữ in hoa & số ngẫu nhiên]</strong> (VD: <code>chuyen khoan MDF2AC68B</code>)</div>
         </div>
 
         <div class="form-row">
@@ -313,7 +358,7 @@
           <summary>☁️ Cấu hình Lưu cố định lên GitHub Pages / Server (Tùy chọn)</summary>
           <div style="margin-top: 12px;">
             <p class="hint" style="margin-bottom: 10px;">
-              Nếu bạn đang host web trên <strong>GitHub Pages</strong>, điền thông tin bên dưới để khi bấm <strong>"Lưu Cấu Hình"</strong>, hệ thống tự động ghi đè file <code>config.json</code> trực tiếp lên GitHub (mọi khách truy cập từ điện thoại khác đều thấy STK mới ngay lập tức).
+              Nếu bạn đang host web trên <strong>GitHub Pages</strong>, điền thông tin bên dưới để khi bấm <strong>"Lưu Cấu Hình"</strong>, hệ thống tự động ghi đè file <code>config.json</code> trực tiếp lên GitHub.
             </p>
             <div class="form-row">
               <div class="form-group">
@@ -326,7 +371,7 @@
               </div>
             </div>
             <div class="form-group" style="margin-bottom:0">
-              <label>GitHub Personal Access Token (Classic / Fine-grained)</label>
+              <label>GitHub Personal Access Token</label>
               <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
             </div>
           </div>
@@ -351,8 +396,11 @@
           <input type="number" id="testAmount" value="500000" step="10000" oninput="updatePreview()">
         </div>
         <div class="form-group">
-          <label>Mã Đơn Hàng / Nội Dung CK</label>
-          <input type="text" id="testCode" value="NAP8899" oninput="updatePreview()">
+          <label>Nội Dung Chuyển Khoản Của Đơn Này</label>
+          <div class="input-with-btn">
+            <input type="text" id="testCode" value="chuyen khoan MDF2AC68B" oninput="updatePreview()">
+            <button type="button" class="btn btn-secondary" onclick="generateNewRandomTx()">🎲 Random</button>
+          </div>
         </div>
       </div>
       <div class="form-group" style="margin-bottom:0">
@@ -402,7 +450,7 @@
           <div>✏️</div>
           <div>
             <div class="preview-label">Mã đơn hàng</div>
-            <div class="preview-val" style="color:#e67e22" id="previewCode">NAP8899</div>
+            <div class="preview-val" style="color:#e67e22" id="previewCode">chuyen khoan MDF2AC68B</div>
           </div>
         </div>
       </div>
@@ -413,16 +461,61 @@
 <div class="toast" id="toast">Đã lưu cấu hình thành công!</div>
 
 <script>
+  // Hàm sinh chuỗi 9 ký tự chữ IN HOA + số ngẫu nhiên (đảm bảo có cả chữ và số như MDF2AC68B)
+  function random9Alphanumeric() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 9; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  function buildTxContent(prefix) {
+    const cleanPrefix = (prefix || '').trim();
+    const code9 = random9Alphanumeric();
+    return cleanPrefix ? `${cleanPrefix} ${code9}` : code9;
+  }
+
   const DEFAULT_CONFIG = {
     bankId: 'TCB',
     bankName: 'Techcombank',
     accountNo: '5549123456',
     accountName: 'NGUYEN MINH TIEN',
+    txPrefix: 'chuyen khoan',
+    defaultTxCode: 'chuyen khoan MDF2AC68B',
+    autoRandomCode: true,
     cskhUrl: 'https://t.me/alexpham2482',
     logoUrl: 'https://f1686s.com/favicon.ico',
     timerMinutes: 15,
     minAmount: '10.000 VND'
   };
+
+  function generateNewRandomTx() {
+    const prefix = document.getElementById('txPrefix').value;
+    const newTx = buildTxContent(prefix);
+    document.getElementById('defaultTxCode').value = newTx;
+    document.getElementById('testCode').value = newTx;
+    updatePreview();
+  }
+
+  function onPrefixChange() {
+    const prefix = document.getElementById('txPrefix').value.trim();
+    const currentDefault = document.getElementById('defaultTxCode').value.trim();
+    // Giữ lại phần mã 9 ký tự ở cuối nếu có
+    const parts = currentDefault.split(/\s+/);
+    const lastPart = parts[parts.length - 1] || random9Alphanumeric();
+    const code9 = /^[A-Z0-9]{9}$/i.test(lastPart) ? lastPart.toUpperCase() : random9Alphanumeric();
+    const updated = prefix ? `${prefix} ${code9}` : code9;
+    document.getElementById('defaultTxCode').value = updated;
+    document.getElementById('testCode').value = updated;
+    updatePreview();
+  }
+
+  function syncTestCodeFromDefault() {
+    document.getElementById('testCode').value = document.getElementById('defaultTxCode').value;
+    updatePreview();
+  }
 
   // Bỏ dấu Tiếng Việt & In Hoa cho Tên chủ TK
   function formatAccountName(input) {
@@ -448,6 +541,9 @@
       bankName: document.getElementById('bankName').value.trim(),
       accountNo: document.getElementById('accountNo').value.trim(),
       accountName: document.getElementById('accountName').value.trim(),
+      txPrefix: document.getElementById('txPrefix').value.trim(),
+      defaultTxCode: document.getElementById('defaultTxCode').value.trim(),
+      autoRandomCode: document.getElementById('autoRandomCode').checked,
       timerMinutes: parseInt(document.getElementById('timerMinutes').value) || 15,
       minAmount: document.getElementById('minAmount').value.trim() || '10.000 VND',
       cskhUrl: document.getElementById('cskhUrl').value.trim(),
@@ -460,12 +556,16 @@
     document.getElementById('bankName').value = cfg.bankName || 'Techcombank';
     document.getElementById('accountNo').value = cfg.accountNo || '';
     document.getElementById('accountName').value = cfg.accountName || '';
+    document.getElementById('txPrefix').value = cfg.txPrefix !== undefined ? cfg.txPrefix : 'chuyen khoan';
+    const initialCode = cfg.defaultTxCode || buildTxContent(cfg.txPrefix || 'chuyen khoan');
+    document.getElementById('defaultTxCode').value = initialCode;
+    document.getElementById('testCode').value = initialCode;
+    document.getElementById('autoRandomCode').checked = cfg.autoRandomCode !== undefined ? cfg.autoRandomCode : true;
     document.getElementById('timerMinutes').value = cfg.timerMinutes || 15;
     document.getElementById('minAmount').value = cfg.minAmount || '10.000 VND';
     document.getElementById('cskhUrl').value = cfg.cskhUrl || '';
     document.getElementById('logoUrl').value = cfg.logoUrl || '';
 
-    // Đồng bộ dropdown
     const select = document.getElementById('bankSelect');
     const matchOption = Array.from(select.options).find(opt => opt.value.startsWith(cfg.bankId + '|'));
     select.value = matchOption ? matchOption.value : 'CUSTOM';
@@ -476,7 +576,7 @@
   function updatePreview() {
     const cfg = getFormConfig();
     const testAmount = parseInt(document.getElementById('testAmount').value) || 0;
-    const testCode = document.getElementById('testCode').value.trim() || '---';
+    const testCode = document.getElementById('testCode').value.trim() || cfg.defaultTxCode || '---';
 
     document.getElementById('previewBankName').innerText = cfg.bankName || '---';
     document.getElementById('previewAccountNo').innerText = cfg.accountNo || '---';
@@ -489,7 +589,6 @@
       document.getElementById('previewQr').src = qrUrl;
     }
 
-    // Cập nhật link test
     const baseUrl = window.location.href.replace(/\/admin\.html.*$/, '/index.html');
     const fullUrl = `${baseUrl}?amount=${testAmount}&code=${encodeURIComponent(testCode)}`;
     document.getElementById('generatedUrl').value = fullUrl;
@@ -504,17 +603,14 @@
     saveBtn.disabled = true;
     saveBtn.innerText = '⏳ Đang lưu...';
 
-    // 1. Lưu vào localStorage để có hiệu lực tức thì trên máy hiện tại
     localStorage.setItem('payment_gateway_config', JSON.stringify(cfg));
     localStorage.setItem('prefer_local_override', 'true');
 
-    // Lưu thông tin GitHub nếu có
     const ghRepo = document.getElementById('ghRepo').value.trim();
     const ghBranch = document.getElementById('ghBranch').value.trim() || 'main';
     const ghToken = document.getElementById('ghToken').value.trim();
     localStorage.setItem('gh_sync_settings', JSON.stringify({ ghRepo, ghBranch, ghToken }));
 
-    // 2. Nếu có cấu hình GitHub API -> Tự động đẩy file config.json lên GitHub
     if (ghRepo && ghToken) {
       try {
         await pushConfigToGitHub(ghRepo, ghBranch, ghToken, cfg);
@@ -524,19 +620,17 @@
         alert('Đã lưu trên trình duyệt, nhưng lỗi đẩy lên GitHub: ' + err.message);
       }
     } else {
-      showToast('✅ Đã lưu cố định trên trình duyệt! (Hoặc tải config.json / index.html để up lên host)');
+      showToast('✅ Đã lưu cố định trên trình duyệt!');
     }
 
     saveBtn.disabled = false;
     saveBtn.innerText = '💾 Lưu Cấu Hình Cố Định';
   }
 
-  // Hàm đẩy file config.json lên GitHub Repository tự động
   async function pushConfigToGitHub(repo, branch, token, configObj) {
     const apiUrl = `https://api.github.com/repos/${repo}/contents/config.json`;
     let sha = undefined;
 
-    // Lấy SHA hiện tại của file config.json (nếu đã tồn tại)
     const getRes = await fetch(`${apiUrl}?ref=${branch}`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
     });
@@ -554,7 +648,7 @@
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: `Update payment config via Admin Panel (${configObj.bankName} - ${configObj.accountNo})`,
+        message: `Update payment config via Admin Panel`,
         content: contentBase64,
         branch: branch,
         ...(sha ? { sha } : {})
@@ -567,7 +661,6 @@
     }
   }
 
-  // Tải file config.json về máy
   function downloadConfigFile() {
     const cfg = getFormConfig();
     const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
@@ -578,13 +671,11 @@
     showToast('📥 Đã tải file config.json!');
   }
 
-  // Xuất thẳng file index.html đã gắn cứng STK mới (không cần file phụ)
   async function downloadStandaloneIndex() {
     const cfg = getFormConfig();
     try {
       const res = await fetch('./index.html');
       let html = await res.text();
-      // Thay thế DEFAULT_CONFIG trong index.html bằng thông tin mới nhất
       const newDefaultBlock = `const DEFAULT_CONFIG = ${JSON.stringify(cfg, null, 4)};`;
       html = html.replace(/const DEFAULT_CONFIG = \{[\s\S]*?\};/, newDefaultBlock);
 
@@ -613,9 +704,7 @@
     setTimeout(() => el.classList.remove('show'), 2800);
   }
 
-  // Khởi tạo dữ liệu khi mở trang Admin
   async function initAdmin() {
-    // Khôi phục cài đặt GitHub
     const ghSaved = localStorage.getItem('gh_sync_settings');
     if (ghSaved) {
       try {
@@ -626,7 +715,6 @@
       } catch (e) {}
     }
 
-    // Đọc từ localStorage hoặc config.json
     const localSaved = localStorage.getItem('payment_gateway_config');
     if (localSaved) {
       try {
