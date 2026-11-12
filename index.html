@@ -95,7 +95,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
 
 <div class="top-bar">
   <a class="back-btn" onclick="history.back()">&#8249;</a>
-  <img class="logo" id="logoImg" src="https://f1686s.com/favicon.ico" onerror="this.style.display='none'">
+  <img class="logo" src="https://f1686s.com/favicon.ico" onerror="this.style.display='none'">
 </div>
 
 <div class="notice">
@@ -107,7 +107,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   <div class="qr-loading" id="qrLoading">Đang tạo mã QR...</div>
   <img id="qrImg" style="display:none" alt="QR">
   <div class="amount-label" id="amountDisplay">0 VND</div>
-  <div class="payment-status" id="paymentStatus">
+  <div class="payment-status">
     <span class="status-dot">●</span>
     <span>Đang chờ thanh toán</span>
   </div>
@@ -118,22 +118,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     <div class="info-icon">🏦</div>
     <div class="info-content">
       <div class="info-label-sm">Ngân hàng</div>
-      <div class="info-value" id="bankNameDisplay">Techcombank</div>
+      <div class="info-value" id="bankNameDisplay">VPBank</div>
     </div>
   </div>
   <div class="info-item">
     <div class="info-icon">💳</div>
     <div class="info-content">
       <div class="info-label-sm">Số tài khoản</div>
-      <div class="info-value" id="accountNoDisplay">5549123456</div>
+      <div class="info-value" id="accountNoDisplay">0368927160</div>
     </div>
-    <button class="copy-btn" onclick="copyText(document.getElementById('accountNoDisplay').innerText)">Copy</button>
+    <button class="copy-btn" onclick="copyText('0368927160')">Copy</button>
   </div>
   <div class="info-item">
     <div class="info-icon">👤</div>
     <div class="info-content">
       <div class="info-label-sm">Tên người nhận</div>
-      <div class="info-value" id="accountNameDisplay">NGUYEN MINH TIEN</div>
+      <div class="info-value" id="accountNameDisplay">PHAN THI MINH ANH</div>
     </div>
   </div>
   <div class="info-item">
@@ -142,7 +142,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
       <div class="info-label-sm">Số tiền đơn hàng</div>
       <div class="info-value red" id="amountValue">0 VND</div>
     </div>
-    <button class="copy-btn" onclick="copyText(document.getElementById('amountValue').innerText)">Copy</button>
+    <button class="copy-btn" onclick="copyText(document.getElementById('amountValue').innerText.replace(/[^0-9]/g, ''))">Copy</button>
   </div>
   <div class="info-item">
     <div class="info-icon">✏️</div>
@@ -157,7 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
 <div class="note">
   <h3>Xin lưu ý :</h3>
   <p>1. Vui lòng chọn phương thức chuyển tiền nhanh 24/7</p>
-  <p>2. Vui lòng điền chính xác <strong>SỐ TIỀN</strong>, <strong>SỐ TÀI KHOẢN</strong> và <strong>NỘI DUNG CHUYỂN KHOẢN</strong> chỉ hỗ trợ các KHOẢN NẠP trên <strong id="minAmountDisplay">10.000 VND</strong> được yêu cầu từ hệ thống.</p>
+  <p>2. Vui lòng điền chính xác <strong>SỐ TIỀN</strong>, <strong>SỐ TÀI KHOẢN</strong> và <strong>NỘI DUNG CHUYỂN KHOẢN</strong> chỉ hỗ trợ các KHOẢN NẠP trên <strong>10.000 VND</strong> được yêu cầu từ hệ thống.</p>
   <p>3. Lưu lại biên lai giao dịch để đối chiếu khi cần thiết.</p>
 </div>
 
@@ -169,27 +169,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
   </div>
 </div>
 
-<!-- Nút liên hệ CSKH -->
-<a href="https://t.me/alexpham2482" id="cskhBtn" class="contact-cskh" target="_blank">
+<a href="https://t.me/alexpham2482" class="contact-cskh" target="_blank">
   <span>Hỗ Trợ CSKH</span>
   <span class="headset">🎧</span>
 </a>
 
 <script>
-  const DEFAULT_CONFIG = {
-    bankId: 'TCB',
-    bankName: 'Techcombank',
-    accountNo: '5549123456',
-    accountName: 'NGUYEN MINH TIEN',
-    txPrefix: 'chuyen khoan',
-    defaultTxCode: 'chuyen khoan MDF2AC68B',
-    autoRandomCode: true,
-    cskhUrl: 'https://t.me/alexpham2482',
-    logoUrl: 'https://f1686s.com/favicon.ico',
-    timerMinutes: 15,
-    minAmount: '10.000 VND'
-  };
+  // Cấu hình cứng thông tin tài khoản
+  const BANK_ID = 'VPB'; // Mã ngân hàng của VPBank dùng cho VietQR
+  const BANK_NAME = 'VPBank';
+  const ACCOUNT_NO = '0368927160';
+  const ACCOUNT_NAME = 'PHAN THI MINH ANH';
+  const TIMER_MINUTES = 15;
 
+  let timerInterval = null;
+
+  // Lấy số tiền từ URL (ví dụ: ?amount=50000)
+  const params = new URLSearchParams(window.location.search);
+  const amount = params.get('amount') || '0';
+  const urlCode = params.get('code'); // Có thể truyền mã GD từ URL nếu cần
+  const amountNum = parseInt(amount) || 0;
+  const amountVND = amountNum.toLocaleString('vi-VN') + ' VND';
+
+  // Hiển thị số tiền
+  document.getElementById('amountDisplay').innerText = amountVND;
+  document.getElementById('amountValue').innerText = amountVND;
+
+  // Hàm tạo mã giao dịch ngẫu nhiên
   function random9Alphanumeric() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
@@ -199,110 +205,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     return result;
   }
 
-  // Lấy tham số từ URL
-  const params = new URLSearchParams(window.location.search);
-  const amount = params.get('amount') || '0';
-  const urlCode = params.get('code');
-  const amountNum = parseInt(amount) || 0;
-  const amountVND = amountNum.toLocaleString('vi-VN') + ' VND';
+  // Khởi tạo mã giao dịch
+  const finalTxCode = (urlCode && urlCode.trim() !== '') ? urlCode.trim() : `chuyen khoan ${random9Alphanumeric()}`;
+  document.getElementById('txCode').innerText = finalTxCode;
 
-  document.getElementById('amountDisplay').innerText = amountVND;
-  document.getElementById('amountValue').innerText = amountVND;
+  // Khởi tạo QR Code qua VietQR
+  const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${amountNum}&addInfo=${encodeURIComponent(finalTxCode)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+  const qrImg = document.getElementById('qrImg');
+  const qrLoading = document.getElementById('qrLoading');
 
-  let timerInterval = null;
-  let generatedSessionCode = null;
+  qrImg.onload = function() {
+    qrLoading.style.display = 'none';
+    qrImg.style.display = 'block';
+  };
+  qrImg.onerror = function() {
+    qrLoading.innerText = 'Không tải được QR. Vui lòng thử lại.';
+  };
+  qrImg.src = qrUrl;
 
-  function resolveTransactionCode(config) {
-    // 1. Nếu trên URL có ?code=... thì ưu tiên hiển thị theo URL
-    if (urlCode && urlCode.trim() !== '') {
-      return urlCode.trim();
-    }
-    // 2. Nếu bật chế độ tự động random mã 9 ký tự cho mỗi phiên
-    if (config.autoRandomCode) {
-      if (!generatedSessionCode) {
-        generatedSessionCode = random9Alphanumeric();
-      }
-      const prefix = (config.txPrefix !== undefined ? config.txPrefix : 'chuyen khoan').trim();
-      return prefix ? `${prefix} ${generatedSessionCode}` : generatedSessionCode;
-    }
-    // 3. Nếu tắt autoRandomCode thì dùng đúng mã cố định đã lưu trong Admin
-    return config.defaultTxCode || 'chuyen khoan MDF2AC68B';
-  }
-
-  function applyConfig(cfg) {
-    const config = { ...DEFAULT_CONFIG, ...cfg };
-    const finalTxCode = resolveTransactionCode(config);
-
-    document.getElementById('bankNameDisplay').innerText = config.bankName;
-    document.getElementById('accountNoDisplay').innerText = config.accountNo;
-    document.getElementById('accountNameDisplay').innerText = config.accountName;
-    document.getElementById('minAmountDisplay').innerText = config.minAmount;
-    document.getElementById('txCode').innerText = finalTxCode;
-
-    const cskhBtn = document.getElementById('cskhBtn');
-    if (config.cskhUrl) cskhBtn.href = config.cskhUrl;
-
-    const logoImg = document.getElementById('logoImg');
-    if (config.logoUrl) {
-      logoImg.style.display = 'block';
-      logoImg.src = config.logoUrl;
-    }
-
-    // Tạo QR VietQR với nội dung chuyển khoản mới
-    const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(config.bankId)}-${encodeURIComponent(config.accountNo)}-compact2.png?amount=${amountNum}&addInfo=${encodeURIComponent(finalTxCode)}&accountName=${encodeURIComponent(config.accountName)}`;
-    const qrImg = document.getElementById('qrImg');
-    const qrLoading = document.getElementById('qrLoading');
-
-    qrLoading.style.display = 'flex';
-    qrImg.style.display = 'none';
-    qrImg.onload = function() {
-      qrLoading.style.display = 'none';
-      qrImg.style.display = 'block';
-    };
-    qrImg.onerror = function() {
-      qrLoading.innerText = 'Không tải được QR. Vui lòng thử lại.';
-    };
-    qrImg.src = qrUrl;
-
-    startTimer((parseInt(config.timerMinutes) || 15) * 60);
-  }
-
-  async function loadPaymentConfig() {
-    let finalConfig = { ...DEFAULT_CONFIG };
-
-    const localSaved = localStorage.getItem('payment_gateway_config');
-    if (localSaved) {
-      try {
-        finalConfig = { ...finalConfig, ...JSON.parse(localSaved) };
-      } catch (e) {}
-    }
-
-    try {
-      const res = await fetch(`./config.json?t=${Date.now()}`, { cache: 'no-store' });
-      if (res.ok) {
-        const remoteConfig = await res.json();
-        if (!localStorage.getItem('prefer_local_override')) {
-          finalConfig = { ...finalConfig, ...remoteConfig };
-        }
-      }
-    } catch (err) {}
-
-    applyConfig(finalConfig);
-  }
-
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'payment_gateway_config' && e.newValue) {
-      try {
-        applyConfig(JSON.parse(e.newValue));
-      } catch (err) {}
-    }
-  });
-
+  // Khởi tạo đếm ngược
   function startTimer(totalSecs) {
     if (timerInterval) clearInterval(timerInterval);
     let secs = totalSecs;
     const timerEl = document.getElementById('timer');
-    const qrImg = document.getElementById('qrImg');
     timerEl.classList.remove('urgent');
     document.getElementById('expiredOverlay').style.display = 'none';
     qrImg.style.opacity = '1';
@@ -327,6 +252,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     }, 1000);
   }
 
+  startTimer(TIMER_MINUTES * 60);
+
+  // Hàm Copy
   function copyText(t) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(t).then(showToast).catch(() => fallbackCopy(t));
@@ -334,6 +262,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
       fallbackCopy(t);
     }
   }
+  
   function fallbackCopy(t) {
     const ta = document.createElement('textarea');
     ta.value = t;
@@ -343,13 +272,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff8f0;
     document.body.removeChild(ta);
     showToast();
   }
+  
   function showToast() {
     const el = document.getElementById('toast');
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 2000);
   }
-
-  loadPaymentConfig();
 </script>
 </body>
 </html>
